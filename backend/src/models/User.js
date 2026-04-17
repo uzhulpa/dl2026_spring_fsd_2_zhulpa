@@ -20,6 +20,12 @@ export default (sequelize, DataTypes) => {
       type: DataTypes.STRING(255),
       allowNull: false
     },
+    role: {
+      type: DataTypes.STRING(20),
+      allowNull: false,
+      validate: { isIn: [['user', 'admin']] },
+      defaultValue: 'user',
+    },
     registered_at: {
       type: DataTypes.DATE,
       allowNull: false,
