@@ -1,7 +1,7 @@
 import { Router } from "express";
 
 import authMiddleware from "../middlewares/authMiddleware.js";
-import roleMiddleware from "../middlewares/roleMiddleware.js";
+import { roleMiddleware } from "../middlewares/roleMiddleware.js";
 
 const healthRouter = new Router();
 
