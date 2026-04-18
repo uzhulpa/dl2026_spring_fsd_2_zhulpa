@@ -1,15 +1,17 @@
 import { Router } from "express";
 
+import authMiddleware from "../middlewares/authMiddleware.js";
+
 import AuthRouter from "./AuthRouter.js";
 import HealthRouter from "./HealthRouter.js";
-import usersRouter from "./UsersRouter.js";
+import CollectionRouter from "./CollectionRouter.js";
 import GameRouter from "./GameRouter.js";
 
-const apiRouter = new Router();
+const ApiRouter = new Router();
 
-apiRouter.use('/auth', AuthRouter);
-apiRouter.use('/health', HealthRouter);
-apiRouter.use('/users', usersRouter);
-apiRouter.use('/game', GameRouter);
+ApiRouter.use('/auth', AuthRouter);
+ApiRouter.use('/health', HealthRouter);
+ApiRouter.use('/game', authMiddleware, GameRouter);
+ApiRouter.use('/collections', authMiddleware, CollectionRouter);
 
-export default apiRouter;
+export default ApiRouter;
