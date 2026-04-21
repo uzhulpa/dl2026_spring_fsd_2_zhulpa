@@ -25,6 +25,11 @@ function Header() {
             <Link className="site-nav-link" to="/collections">
               Коллекции
             </Link>
+            {user.role === 'admin' ? (
+              <Link className="site-nav-link" to="/admin/questions">
+                Админ: Вопросы
+              </Link>
+            ) : null}
             <span className="site-username">{user.username}</span>
             <button type="button" className="site-logout" onClick={handleLogout}>
               Выйти
