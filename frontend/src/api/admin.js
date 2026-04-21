@@ -47,3 +47,11 @@ export const fetchAdminCollectionById = async (collectionId) => {
   }
   return data.data;
 };
+
+export const updateAdminCollectionById = async (collectionId, payload) => {
+  const { data } = await apiClient.put(`/admin/collections/${collectionId}`, payload);
+  if (!data?.success || !data.data) {
+    throw new Error('Некорректный ответ сервера');
+  }
+  return data.data;
+};
