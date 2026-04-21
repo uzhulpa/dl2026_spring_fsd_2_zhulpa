@@ -31,3 +31,19 @@ export const createAdminQuestion = async (payload) => {
   }
   return data.data;
 };
+
+export const fetchAdminCollections = async (params = {}) => {
+  const { data } = await apiClient.get('/admin/collections', { params });
+  if (!data?.success || !Array.isArray(data.data)) {
+    throw new Error('Некорректный ответ сервера');
+  }
+  return data.data;
+};
+
+export const fetchAdminCollectionById = async (collectionId) => {
+  const { data } = await apiClient.get(`/admin/collections/${collectionId}`);
+  if (!data?.success || !data.data) {
+    throw new Error('Некорректный ответ сервера');
+  }
+  return data.data;
+};
