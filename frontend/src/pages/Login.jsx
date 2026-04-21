@@ -74,7 +74,7 @@ function Login() {
       }
 
       setAuthToken(token);
-      navigate('/game');
+      navigate('/');
     } catch (error) {
       setServerError(
         error.response?.data?.message || 'Не удалось выполнить вход'

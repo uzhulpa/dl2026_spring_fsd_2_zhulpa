@@ -12,13 +12,19 @@ function Header() {
 
   return (
     <header className="site-header">
-      <a className="site-logo" href="/">
+      <Link className="site-logo" to="/">
         GeoQuiz
-      </a>
+      </Link>
 
       <nav className="site-nav">
         {user ? (
           <>
+            <Link className="site-nav-link" to="/game">
+              Бесконечный режим
+            </Link>
+            <Link className="site-nav-link" to="/collections">
+              Коллекции
+            </Link>
             <span className="site-username">{user.username}</span>
             <button type="button" className="site-logout" onClick={handleLogout}>
               Выйти
