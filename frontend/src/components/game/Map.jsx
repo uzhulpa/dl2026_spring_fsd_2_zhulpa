@@ -1,7 +1,7 @@
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
-const Map = ({ onClick, correctPoint, clickPoint, readOnly = false }) => {
+const Map = ({ onClick, onMapReady, correctPoint, clickPoint, readOnly = false }) => {
   const MapClickHandler = () => {
     useMapEvents({
       click: (e) => {
@@ -14,7 +14,14 @@ const Map = ({ onClick, correctPoint, clickPoint, readOnly = false }) => {
   };
 
   return (
-    <MapContainer center={[20, 0]} zoom={2} style={{ height: '400px', width: '100%' }}>
+    <MapContainer
+      center={[20, 0]}
+      zoom={2}
+      style={{ height: '400px', width: '100%' }}
+      whenReady={() => {
+        if (onMapReady) onMapReady();
+      }}
+    >
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <MapClickHandler />
       {clickPoint && <Marker position={[clickPoint.lat, clickPoint.lng]} />}
