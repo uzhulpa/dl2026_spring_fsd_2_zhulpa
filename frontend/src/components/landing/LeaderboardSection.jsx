@@ -60,8 +60,6 @@ function LeaderboardSection() {
         <>
           <h3>Бесконечный режим</h3>
           {infiniteLeaders.length > 0 ? renderTable(infiniteLeaders) : <p>Пока нет результатов.</p>}
-          <h3>Коллекция #1</h3>
-          {collectionLeaders.length > 0 ? renderTable(collectionLeaders) : <p>Пока нет результатов.</p>}
         </>
       ) : null}
     </section>
