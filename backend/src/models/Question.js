@@ -80,7 +80,12 @@ export default (sequelize, DataTypes) => {
     }
   }, {
     tableName: 'questions',
-    timestamps: false
+    timestamps: false,
+    hooks: {
+            beforeUpdate: (question, options) => {
+                question.updated_at = new Date();
+            }
+        }
   });
 
   return Question;
