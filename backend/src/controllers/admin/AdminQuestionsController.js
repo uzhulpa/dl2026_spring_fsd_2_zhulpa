@@ -90,6 +90,27 @@ class AdminQuestionsController {
             });
         }
     }
+
+    async suggestQuestionsByTitle(req, res) {
+        try {
+            const title = req.query.title;
+
+            const result = await AdminQuestionsService.getQuestionsByTitle(title);
+
+            res.status(200).json({
+                success: true,
+                data: result
+            });
+        }
+        catch (error) {
+            console.error(`Admin (questions) error: ${error}`);
+
+            return res.status(500).json({
+                success: false,
+                message: 'Ошибка при поиске вопросов'
+            });
+        }
+    }
 }
 
 export default new AdminQuestionsController();

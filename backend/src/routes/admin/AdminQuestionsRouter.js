@@ -8,6 +8,7 @@ import AdminQuestionsController from "../../controllers/admin/AdminQuestionsCont
 const AdminQuestionsRouter = new Router();
 
 AdminQuestionsRouter.get('/', AdminQuestionsController.getQuestions);
+AdminQuestionsRouter.get('/suggest', AdminQuestionsController.suggestQuestionsByTitle);
 AdminQuestionsRouter.get('/:questionId', AdminQuestionsController.getQuestionById);
 AdminQuestionsRouter.put('/:questionId', validate(adminQuestionSchema), AdminQuestionsController.updateQuestionById);
 AdminQuestionsRouter.post('/', validate(adminQuestionSchema), AdminQuestionsController.addQuestion);

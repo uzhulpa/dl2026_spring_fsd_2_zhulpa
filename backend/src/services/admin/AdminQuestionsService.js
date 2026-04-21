@@ -1,4 +1,5 @@
 import { Question, sequelize } from "../../models/index.js";
+import { Op } from "sequelize";
 
 class AdminQuestionsService {
     async getQuestions(status, limit=10, offset=0) {
@@ -69,6 +70,36 @@ class AdminQuestionsService {
         }
         catch (error) {
             await transaction.rollback();
+            throw error;
+        }
+    }
+
+    async getQuestionsByTitle(questionTitle) {
+        try {
+            const searchTerm = questionTitle.toLowerCase().trim();
+
+            const questions = await Question.findAll({
+                where: {
+                    status: 'active',
+                    title: {
+                        [Op.iLike]: `%${searchTerm}%`
+                    }
+                },
+                attributes: ['id', 'title'],
+                order: [['title', 'ASC']]
+            });
+
+            if (!questions || questions.length === 0) {
+                return [];
+            }
+
+            const fullQuestions = await Promise.all(
+                questions.map(question => this.getQuestionById(Number(question.id)))
+            );
+
+            return fullQuestions.filter(q => q !== null);
+        }
+        catch (error) {
             throw error;
         }
     }
