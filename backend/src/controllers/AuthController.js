@@ -1,4 +1,4 @@
-import authService from "../services/authService.js";
+import AuthService from "../services/AuthService.js";
 import { AppError } from "../utils/appError.js";
 
 class AuthController {
@@ -6,7 +6,7 @@ class AuthController {
         try {
             const {username, email, password} = req.body;
 
-            const user = await authService.registerUser(username, email, password);
+            const user = await AuthService.registerUser(username, email, password);
 
             res.status(201).json({
                 success: true,
@@ -42,7 +42,7 @@ class AuthController {
         try {
             const {email, password} = req.body;
 
-            const newToken = await authService.authenticateUser(email, password);
+            const newToken = await AuthService.authenticateUser(email, password);
 
             res.status(200).json({
                 success: true,
