@@ -1,6 +1,6 @@
 import { Question, AnswerAttempt, GameSession, sequelize } from "../models/index.js";
 
-import haversineDistanceKm from "../utils/geoUtil.js";
+import { calculateScore } from "../utils/math/calculator.js";
 
 class GameService {
     /**
@@ -33,7 +33,7 @@ class GameService {
         const { question_id, click_longitude, click_latitude, response_time_ms } = payload;
 
         const question = await Question.findByPk(question_id, {
-            attributes: ["id", "correct_latitude", "correct_longitude", "description"],
+            attributes: ["id", "correct_latitude", "correct_longitude", "question_type", "radius_meters", "description", "difficulty"],
         });
 
         if (!question) {
@@ -42,11 +42,32 @@ class GameService {
 
         const correctLat = Number(question.correct_latitude);
         const correctLon = Number(question.correct_longitude);
-        const distanceKm = Number(
-            haversineDistanceKm(click_latitude, click_longitude, correctLat, correctLon).toFixed(2)
-        );
 
-        const score_awarded = 0;
+        const result = calculateScore({
+            clickPoint: {
+                latitude: click_latitude,
+                longitude: click_longitude
+            },
+            correctPoint: {
+                latitude: correctLat,
+                longitude: correctLon
+            },
+            questionType: question.question_type,
+            radiusMeters: question.radius_meters,
+            responseTimeMs: response_time_ms,
+            difficulty: question.difficulty
+        });
+
+        const hasInfiniteAttemptForQuestion = await AnswerAttempt.findOne({
+            where: {
+                user_id: userId,
+                question_id,
+                game_mode: "infinite",
+            },
+            attributes: ["id"],
+        });
+
+        const scoreAwarded = hasInfiniteAttemptForQuestion ? 0 : result.score_awarded;
 
         await AnswerAttempt.create({
             user_id: userId,
@@ -55,16 +76,16 @@ class GameService {
             session_id: null,
             click_longitude,
             click_latitude,
-            distance_km: distanceKm,
+            distance_km: result.distance_km,
             response_time_ms,
-            score_awarded,
+            score_awarded: scoreAwarded,
         });
 
         return {
             correct_longitude: correctLon,
             correct_latitude: correctLat,
-            distance_km: distanceKm,
-            score_awarded,
+            distance_km: result.distance_km,
+            score_awarded: scoreAwarded,
             feedback: question.description,
         };
     }
@@ -102,7 +123,7 @@ class GameService {
             }
 
             const question = await Question.findByPk(question_id, {
-                attributes: ["id", "correct_latitude", "correct_longitude", "description"],
+                attributes: ["id", "correct_latitude", "correct_longitude", "question_type", "radius_meters", "description", "difficulty"],
                 transaction,
             });
 
@@ -112,16 +133,26 @@ class GameService {
 
             const correctLat = Number(question.correct_latitude);
             const correctLon = Number(question.correct_longitude);
-            const distanceKm = Number(
-                haversineDistanceKm(click_latitude, click_longitude, correctLat, correctLon).toFixed(2)
-            );
-
-            const score_awarded = 0;
+            
+            const result = calculateScore({
+                clickPoint: {
+                    latitude: click_latitude,
+                    longitude: click_longitude
+                },
+                correctPoint: {
+                    latitude: correctLat,
+                    longitude: correctLon
+                },
+                questionType: question.question_type,
+                radiusMeters: question.radius_meters,
+                responseTimeMs: response_time_ms,
+                difficulty: question.difficulty
+            });
 
             const newIdx = idx + 1;
             const totalQuestions = session.question_order.length;
             const isLast = newIdx >= totalQuestions;
-            const newTotalScore = Number(session.total_score) + score_awarded;
+            const newTotalScore = Number(session.total_score) + result.score_awarded;
 
             let nextQuestion = null;
             if (!isLast) {
@@ -144,9 +175,9 @@ class GameService {
                     session_id,
                     click_longitude,
                     click_latitude,
-                    distance_km: distanceKm,
+                    distance_km: result.distance_km,
                     response_time_ms,
-                    score_awarded,
+                    score_awarded: result.score_awarded,
                 },
                 { transaction }
             );
@@ -174,8 +205,8 @@ class GameService {
             const base = {
                 correct_longitude: correctLon,
                 correct_latitude: correctLat,
-                distance_km: distanceKm,
-                score_awarded,
+                distance_km: result.distance_km,
+                score_awarded: result.score_awarded,
                 feedback: question.description,
                 session_id: session.id,
                 total_questions: totalQuestions,
