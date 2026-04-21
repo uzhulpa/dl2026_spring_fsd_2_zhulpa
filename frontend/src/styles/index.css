@@ -747,6 +747,54 @@ a {
   opacity: 0.86;
 }
 
+.admin-collection-edit__search {
+  margin-bottom: 0.8rem;
+}
+
+.admin-collection-edit__search-note {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+}
+
+.admin-collection-edit__suggest-list {
+  margin-top: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.admin-collection-edit__suggest-item {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: rgba(246, 244, 241, 0.94);
+  padding: 0.55rem 0.7rem;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.admin-collection-edit__suggest-item:last-child {
+  border-bottom: 0;
+}
+
+.admin-collection-edit__suggest-item:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.admin-collection-edit__suggest-title {
+  font-weight: 600;
+}
+
+.admin-collection-edit__suggest-meta {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
 .admin-collection-edit__list {
   display: flex;
   flex-direction: column;
@@ -790,6 +838,12 @@ a {
 
 .admin-collection-edit__item-meta p {
   margin: 0;
+}
+
+.admin-collection-edit__remove-btn {
+  margin-top: 0.45rem;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.85rem;
 }
 
 .admin-questions-page__pager {

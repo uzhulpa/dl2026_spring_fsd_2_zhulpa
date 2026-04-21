@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { fetchAdminCollectionById, updateAdminCollectionById } from '../api/admin';
+import {
+  fetchAdminCollectionById,
+  suggestAdminQuestionsByTitle,
+  updateAdminCollectionById,
+} from '../api/admin';
 import { useAuth } from '../hooks/useAuth';
 
 function formatDate(value) {
@@ -44,6 +48,11 @@ function AdminCollectionEdit() {
   const [originalCollection, setOriginalCollection] = useState(null);
   const [touched, setTouched] = useState({});
   const [draggedQuestionId, setDraggedQuestionId] = useState(null);
+  const [questionSearch, setQuestionSearch] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [suggestionsError, setSuggestionsError] = useState('');
+  const [searchAttempted, setSearchAttempted] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -92,6 +101,63 @@ function AdminCollectionEdit() {
       list.splice(targetIndex, 0, moved);
       setSaveSuccess('');
       return { ...prev, Questions: list };
+    });
+  };
+
+  useEffect(() => {
+    const title = questionSearch.trim();
+    if (title.length < 3) {
+      setSuggestions([]);
+      setSuggestionsError('');
+      setSearchAttempted(false);
+      setSuggestionsLoading(false);
+      return undefined;
+    }
+
+    const timer = setTimeout(async () => {
+      setSuggestionsLoading(true);
+      setSuggestionsError('');
+      setSearchAttempted(true);
+      try {
+        const data = await suggestAdminQuestionsByTitle(title);
+        setSuggestions(data.slice(0, 5));
+      } catch (e) {
+        setSuggestions([]);
+        setSuggestionsError(
+          e.response?.data?.message || 'Не удалось получить подсказки вопросов'
+        );
+      } finally {
+        setSuggestionsLoading(false);
+      }
+    }, 450);
+
+    return () => clearTimeout(timer);
+  }, [questionSearch]);
+
+  const appendQuestionFromSuggest = (question) => {
+    setCollection((prev) => {
+      if (!prev) return prev;
+      const exists = prev.Questions.some((item) => item.id === question.id);
+      if (exists) return prev;
+      setSaveSuccess('');
+      return {
+        ...prev,
+        Questions: [...prev.Questions, question],
+      };
+    });
+    setQuestionSearch('');
+    setSuggestions([]);
+    setSearchAttempted(false);
+  };
+
+  const removeQuestionFromCollection = (questionId) => {
+    setCollection((prev) => {
+      if (!prev) return prev;
+      setSaveSuccess('');
+      return {
+        ...prev,
+        Questions: prev.Questions.filter((question) => question.id !== questionId),
+      };
     });
   };
 
@@ -216,6 +282,45 @@ function AdminCollectionEdit() {
           <div className="admin-collection-edit__questions">
             <h2 className="admin-collection-edit__title">Вопросы в коллекции</h2>
             <p className="admin-collection-edit__hint">Перетаскивайте карточки, чтобы менять порядок.</p>
+            <div className="admin-collection-edit__search">
+              <label className="form-field">
+                <span>Добавить вопрос по названию</span>
+                <input
+                  value={questionSearch}
+                  onChange={(event) => {
+                    setQuestionSearch(event.target.value);
+                  }}
+                  placeholder="Введите минимум 3 символа..."
+                />
+              </label>
+              {suggestionsLoading ? <p className="admin-collection-edit__search-note">Поиск...</p> : null}
+              {suggestionsError ? (
+                <p className="form-error admin-collection-edit__search-note">{suggestionsError}</p>
+              ) : null}
+              {!suggestionsLoading &&
+              !suggestionsError &&
+              searchAttempted &&
+              questionSearch.trim().length >= 3 &&
+              suggestions.length === 0 ? (
+                <p className="admin-collection-edit__search-note">Нет вопросов с таким текстом</p>
+              ) : null}
+              {suggestions.length > 0 ? (
+                <div className="admin-collection-edit__suggest-list">
+                  {suggestions.map((question) => (
+                    <button
+                      key={question.id}
+                      type="button"
+                      className="admin-collection-edit__suggest-item"
+                      disabled={collection.Questions.some((item) => item.id === question.id)}
+                      onClick={() => appendQuestionFromSuggest(question)}
+                    >
+                      <span className="admin-collection-edit__suggest-title">{question.title}</span>
+                      <span className="admin-collection-edit__suggest-meta">ID {question.id}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
             {orderedQuestions.length === 0 ? (
               <p>В коллекции нет вопросов.</p>
             ) : (
@@ -246,6 +351,17 @@ function AdminCollectionEdit() {
                       <p>ID {question.id}</p>
                       <p>difficulty: {question.difficulty}</p>
                       <p>{question.status}</p>
+                      <button
+                        type="button"
+                        className="btn btn-secondary admin-collection-edit__remove-btn"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          removeQuestionFromCollection(question.id);
+                        }}
+                      >
+                        Удалить
+                      </button>
                     </div>
                   </article>
                 ))}

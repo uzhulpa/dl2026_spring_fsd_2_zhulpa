@@ -55,3 +55,13 @@ export const updateAdminCollectionById = async (collectionId, payload) => {
   }
   return data.data;
 };
+
+export const suggestAdminQuestionsByTitle = async (title) => {
+  const { data } = await apiClient.get('/admin/questions/suggest', {
+    params: { title },
+  });
+  if (!data?.success || !Array.isArray(data.data)) {
+    throw new Error('Некорректный ответ сервера');
+  }
+  return data.data;
+};
