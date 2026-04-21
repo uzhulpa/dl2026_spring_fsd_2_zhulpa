@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
 import Map from '../components/game/Map';
-import QuestionCard from '../components/game/QuestionCard';
 import { useTimer } from '../hooks/useTimer';
 import { fetchInfiniteQuestion, submitInfiniteAnswer } from '../api/game';
 
@@ -12,12 +10,10 @@ function InfiniteGame() {
   const [error, setError] = useState('');
   const [loadingQuestion, setLoadingQuestion] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [leaveResultModal, setLeaveResultModal] = useState(false);
 
   const { elapsedSeconds, start, reset, stop, getElapsedMs } = useTimer();
 
   const loadQuestion = useCallback(async () => {
-    setLeaveResultModal(false);
     setError('');
     setResult(null);
     setClickPoint(null);
@@ -37,19 +33,6 @@ function InfiniteGame() {
   useEffect(() => {
     loadQuestion();
   }, [loadQuestion]);
-
-  useEffect(() => {
-    setLeaveResultModal(false);
-  }, [result]);
-
-  useEffect(() => {
-    if (!result) return undefined;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [result]);
 
   const handleMapReady = useCallback(() => {
     start();
@@ -76,21 +59,14 @@ function InfiniteGame() {
     }
   };
 
-  const handleResultModalPanelAnimationEnd = (event) => {
-    if (event.target !== event.currentTarget) return;
-    if (event.animationName !== 'collection-modal-out') return;
-    if (!leaveResultModal) return;
-    loadQuestion();
-  };
-
   const requestCloseResultModalToNext = () => {
-    setLeaveResultModal(true);
+    loadQuestion();
   };
 
   if (loadingQuestion && !question) {
     return (
       <section className="infinite-game infinite-game--loading">
-        <p>Загрузка вопроса…</p>
+        <p className="notice notice--info">Загрузка вопроса…</p>
       </section>
     );
   }
@@ -98,7 +74,7 @@ function InfiniteGame() {
   if (error && !question) {
     return (
       <section className="infinite-game">
-        <p className="form-error">{error}</p>
+        <p className="form-error notice notice--error">{error}</p>
         <button type="button" className="btn btn-primary" onClick={() => loadQuestion()}>
           Повторить
         </button>
@@ -111,74 +87,68 @@ function InfiniteGame() {
     ? { lat: result.correct_latitude, lng: result.correct_longitude }
     : null;
 
-  const resultModal =
-    answered && result
-      ? createPortal(
-          <div
-            className={`collection-result-modal${leaveResultModal ? ' collection-result-modal--leaving' : ''}`}
-          >
-            <div className="modal-backdrop collection-result-modal__backdrop" aria-hidden="true" />
-            <div
-              className="modal-dialog collection-result-modal__dialog"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="infinite-result-title"
-            >
-              <div
-                className="modal-dialog__panel collection-result-modal__panel"
-                onAnimationEnd={handleResultModalPanelAnimationEnd}
-              >
-                <h3 id="infinite-result-title" className="modal-dialog__title">
-                  Результат
-                </h3>
-                <p className="modal-dialog__text">
-                  <strong>Расстояние:</strong>{' '}
-                  {typeof result.distance_km === 'number'
-                    ? result.distance_km.toFixed(2)
-                    : result.distance_km}{' '}
-                  км
-                </p>
-                <p className="modal-dialog__text">
-                  <strong>Очки за попытку:</strong> {result.score_awarded}
-                </p>
-                {result.feedback ? (
-                  <p className="modal-dialog__feedback">{result.feedback}</p>
-                ) : null}
-                <button
-                  type="button"
-                  className="btn btn-primary modal-dialog__action"
-                  disabled={leaveResultModal}
-                  onClick={requestCloseResultModalToNext}
-                >
-                  Следующий вопрос
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )
-      : null;
-
   return (
     <section className="infinite-game">
       {question ? (
-        <>
-          <QuestionCard
-            title={question.title}
-            imageUrl={question.image_url}
-            difficulty={question.difficulty}
-          />
+        <div className="game-layout">
+          <aside className="game-layout__left">
+            <div className="game-layout__question">
+              <div className="infinite-game__toolbar">
+                <h2 className="question-card__title">{question.title}</h2>
+                <span className="infinite-game__timer">
+                  Время: <strong>{elapsedSeconds}</strong> с
+                </span>
+              </div>
+              {typeof question.difficulty === 'number' ? (
+                <p className="question-card__meta">Сложность: {question.difficulty}</p>
+              ) : null}
+              {!answered ? (
+                <p className="infinite-game__hint">Кликните по карте, чтобы поставить метку</p>
+              ) : null}
+              {question.image_url ? (
+                <div className="game-layout__image-wrap">
+                  <img className="game-layout__image" src={question.image_url} alt="" loading="lazy" />
+                </div>
+              ) : null}
+            </div>
 
-          <div className="infinite-game__toolbar">
-            <span className="infinite-game__timer">
-              Время: <strong>{elapsedSeconds}</strong> с
-            </span>
-            {!answered ? (
-              <span className="infinite-game__hint">Кликните по карте, чтобы поставить метку</span>
+            {answered && result ? (
+              <div className="game-layout__result notice notice--success">
+                {result.feedback ? <p className="infinite-game__feedback">{result.feedback}</p> : null}
+              </div>
             ) : null}
-          </div>
 
-          <div className="infinite-game__map-wrap">
+            {answered && result ? (
+              <div className="game-layout__stats">
+                <p>
+                  <strong>Расстояние:</strong>{' '}
+                  {typeof result.distance_km === 'number' ? result.distance_km.toFixed(2) : result.distance_km} км
+                </p>
+                <p>
+                  <strong>Очки за попытку:</strong> {result.score_awarded}
+                </p>
+              </div>
+            ) : null}
+
+            {error ? <p className="form-error notice notice--error infinite-game__error">{error}</p> : null}
+
+            {!answered ? (
+              <button
+                type="button"
+                className="btn btn-primary infinite-game__submit"
+                disabled={!clickPoint || submitting}
+                onClick={handleSubmit}
+              >
+                {submitting ? 'Отправка…' : 'Ответить'}
+              </button>
+            ) : (
+              <button type="button" className="btn btn-primary infinite-game__submit" onClick={requestCloseResultModalToNext}>
+                Следующий вопрос
+              </button>
+            )}
+          </aside>
+
+          <div className="infinite-game__map-wrap game-layout__map">
             <Map
               key={question.question_id}
               onMapReady={handleMapReady}
@@ -188,22 +158,8 @@ function InfiniteGame() {
               readOnly={answered}
             />
           </div>
-
-          {error ? <p className="form-error infinite-game__error">{error}</p> : null}
-
-          {!answered ? (
-            <button
-              type="button"
-              className="btn btn-primary infinite-game__submit"
-              disabled={!clickPoint || submitting}
-              onClick={handleSubmit}
-            >
-              {submitting ? 'Отправка…' : 'Ответить'}
-            </button>
-          ) : null}
-        </>
+        </div>
       ) : null}
-      {resultModal}
     </section>
   );
 }

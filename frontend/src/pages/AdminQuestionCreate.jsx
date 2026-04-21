@@ -106,7 +106,7 @@ function AdminQuestionCreate() {
   };
 
   if (!user || user.role !== 'admin') {
-    return <section className="admin-questions-page"><p className="form-error">Доступ только для администратора.</p></section>;
+    return <section className="admin-questions-page"><p className="form-error notice notice--error">Доступ только для администратора.</p></section>;
   }
 
   return (
@@ -115,8 +115,8 @@ function AdminQuestionCreate() {
         <h1 className="admin-questions-page__title">Добавить вопрос</h1>
         <Link className="btn btn-secondary" to="/admin/questions">К списку вопросов</Link>
       </div>
-      {error ? <p className="form-error">{error}</p> : null}
-      {saveSuccess ? <p className="admin-question-editor__success">{saveSuccess}</p> : null}
+      {error ? <p className="form-error notice notice--error">{error}</p> : null}
+      {saveSuccess ? <p className="admin-question-editor__success notice notice--success">{saveSuccess}</p> : null}
 
       <form className="admin-question-editor__form" onSubmit={handleSave} noValidate>
         {formValues.image_url ? (

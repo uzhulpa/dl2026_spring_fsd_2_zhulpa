@@ -2,20 +2,20 @@ import { Link } from 'react-router-dom';
 
 const modes = [
   {
-    title: 'БЕСКОНЕЧНЫЙ РЕЖИМ',
-    text: 'Случайные вопросы без ограничений. Очки за новые вопросы',
+    title: 'Бесконечный режим',
+    text: 'Случайные вопросы без ограничений. Очки начисляются только за новый вопрос.',
     to: '/game',
   },
   {
-    title: 'КОЛЛЕКЦИИ',
-    text: 'Готовые подборки по темам. Соревнуйтесь с другими игроками',
+    title: 'Коллекции',
+    text: 'Готовые подборки по темам с отдельной таблицей лидеров.',
     to: '/collections',
   },
 ];
 
 function GameModesSection() {
   return (
-    <section className="landing-section gradient-3">
+    <section className="landing-section">
       <h2>Режимы игры</h2>
       <div className="card-grid two-cols">
         {modes.map((mode) => (

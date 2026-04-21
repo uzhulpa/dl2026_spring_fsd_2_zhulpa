@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import { fetchCollectionLeaderboard, fetchInfiniteLeaderboard } from '../../api/leaderboard';
+import { fetchInfiniteLeaderboard } from '../../api/leaderboard';
 
 function LeaderboardSection() {
   const [infiniteLeaders, setInfiniteLeaders] = useState([]);
-  const [collectionLeaders, setCollectionLeaders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -12,12 +11,8 @@ function LeaderboardSection() {
       setLoading(true);
       setError('');
       try {
-        const [infiniteData, collectionData] = await Promise.all([
-          fetchInfiniteLeaderboard({ page: 1, perPage: 10 }),
-          fetchCollectionLeaderboard(1, { page: 1, perPage: 10 }),
-        ]);
+        const infiniteData = await fetchInfiniteLeaderboard({ page: 1, perPage: 10 });
         setInfiniteLeaders(infiniteData);
-        setCollectionLeaders(collectionData);
       } catch (e) {
         setError(e.response?.data?.message || 'Не удалось загрузить таблицу лидеров');
       } finally {
@@ -52,14 +47,14 @@ function LeaderboardSection() {
   );
 
   return (
-    <section className="landing-section gradient-4">
+    <section className="landing-section">
       <h2>Таблица лидеров</h2>
-      {loading ? <p>Загрузка…</p> : null}
-      {error ? <p className="form-error">{error}</p> : null}
+      {loading ? <p className="notice notice--info">Загрузка…</p> : null}
+      {error ? <p className="form-error notice notice--error">{error}</p> : null}
       {!loading && !error ? (
         <>
           <h3>Бесконечный режим</h3>
-          {infiniteLeaders.length > 0 ? renderTable(infiniteLeaders) : <p>Пока нет результатов.</p>}
+          {infiniteLeaders.length > 0 ? renderTable(infiniteLeaders) : <p className="notice notice--warning">Пока нет результатов.</p>}
         </>
       ) : null}
     </section>

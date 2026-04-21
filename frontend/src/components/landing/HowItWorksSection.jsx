@@ -1,21 +1,21 @@
 const steps = [
   {
-    title: 'ШАГ 1',
-    text: 'Вам показывается вопрос и картинка',
+    title: 'Выберите режим',
+    text: 'Бесконечная игра или тематические коллекции',
   },
   {
-    title: 'ШАГ 2',
-    text: 'Вы кликаете на место, где находится ответ',
+    title: 'Отметьте точку',
+    text: 'Кликните на карте, где, по вашему мнению, находится ответ',
   },
   {
-    title: 'ШАГ 3',
-    text: 'Получаете результат: расстояние и очки',
+    title: 'Получите результат',
+    text: 'Смотрите расстояние, очки и прогресс в рейтинге',
   },
 ];
 
 function HowItWorksSection() {
   return (
-    <section className="landing-section gradient-2">
+    <section className="landing-section">
       <h2>Как это работает</h2>
       <div className="card-grid three-cols">
         {steps.map((step) => (

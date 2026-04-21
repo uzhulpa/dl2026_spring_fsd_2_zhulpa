@@ -46,7 +46,7 @@ function AdminCollections() {
     return (
       <section className="admin-questions-page">
         <h1 className="admin-questions-page__title">Коллекции</h1>
-        <p className="form-error">Доступ только для администратора.</p>
+        <p className="form-error notice notice--error">Доступ только для администратора.</p>
       </section>
     );
   }
@@ -55,13 +55,13 @@ function AdminCollections() {
     <section className="admin-questions-page">
       <h1 className="admin-questions-page__title">Коллекции</h1>
 
-      {loading ? <p>Загрузка…</p> : null}
-      {error ? <p className="form-error">{error}</p> : null}
+      {loading ? <p className="notice notice--info">Загрузка…</p> : null}
+      {error ? <p className="form-error notice notice--error">{error}</p> : null}
 
       {!loading && !error ? (
         <>
           {collections.length === 0 ? (
-            <p>Коллекций пока нет.</p>
+            <p className="notice notice--warning">Коллекций пока нет.</p>
           ) : (
             <div className="admin-questions-list">
               {collections.map((collection) => (
@@ -95,16 +95,16 @@ function AdminCollections() {
           <div className="admin-questions-page__pager">
             <button
               type="button"
-              className="btn btn-secondary"
+              className="btn admin-questions-page__pager-btn"
               onClick={() => setPage((prev) => prev - 1)}
               disabled={page === 1 || loading}
             >
               Назад
             </button>
-            <span>Страница {page}</span>
+            <span className="admin-questions-page__pager-current">Страница {page}</span>
             <button
               type="button"
-              className="btn btn-primary"
+              className="btn admin-questions-page__pager-btn"
               onClick={() => setPage((prev) => prev + 1)}
               disabled={loading || collections.length < PER_PAGE}
             >

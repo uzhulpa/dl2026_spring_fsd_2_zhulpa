@@ -29,7 +29,7 @@ function CollectionsList() {
     return (
       <section className="collections-page collections-page--loading">
         <h1 className="collections-page__heading">Коллекции</h1>
-        <p>Загрузка…</p>
+        <p className="notice notice--info">Загрузка…</p>
       </section>
     );
   }
@@ -38,7 +38,7 @@ function CollectionsList() {
     return (
       <section className="collections-page">
         <h1 className="collections-page__heading">Коллекции</h1>
-        <p className="form-error">{error}</p>
+        <p className="form-error notice notice--error">{error}</p>
         <button type="button" className="btn btn-primary" onClick={load}>
           Повторить
         </button>
@@ -54,7 +54,7 @@ function CollectionsList() {
       </p>
 
       {collections.length === 0 ? (
-        <p className="collections-page__empty">Пока нет доступных коллекций.</p>
+        <p className="collections-page__empty notice notice--warning">Пока нет доступных коллекций.</p>
       ) : (
         <div className="collections-page__grid">
           {collections.map((item) => (

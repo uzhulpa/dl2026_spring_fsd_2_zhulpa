@@ -150,32 +150,38 @@ function AdminQuestionEdit() {
   };
 
   if (!user || user.role !== 'admin') {
-    return <section className="admin-questions-page"><p className="form-error">Доступ только для администратора.</p></section>;
+    return <section className="admin-questions-page"><p className="form-error notice notice--error">Доступ только для администратора.</p></section>;
   }
 
   return (
     <section className="admin-questions-page">
       <div className="admin-question-editor__header">
         <h1 className="admin-questions-page__title">Редактирование вопроса</h1>
-        <Link className="btn btn-secondary" to="/admin/questions">К списку вопросов</Link>
+        <Link className="btn btn-secondary admin-collection-edit__back-btn" to="/admin/questions">К списку вопросов</Link>
       </div>
-      {loading ? <p>Загрузка данных вопроса…</p> : null}
-      {error ? <p className="form-error">{error}</p> : null}
-      {saveSuccess ? <p className="admin-question-editor__success">{saveSuccess}</p> : null}
+      {loading ? <p className="notice notice--info">Загрузка данных вопроса…</p> : null}
+      {error ? <p className="form-error notice notice--error">{error}</p> : null}
+      {saveSuccess ? <p className="admin-question-editor__success notice notice--success">{saveSuccess}</p> : null}
 
       {formValues && !loading ? (
         <form className="admin-question-editor__form" onSubmit={handleSave} noValidate>
+          <h2 className="admin-collection-edit__section-title">Основные данные</h2>
           {formValues.image_url ? (
             <div className="admin-question-editor__image-wrap">
               <img src={formValues.image_url} alt="" className="admin-question-editor__image" />
             </div>
           ) : null}
 
-          <label className="form-field form-field--readonly"><span>ID</span><input value={String(formValues.id)} disabled /></label>
-          <label className={`form-field${isChanged('title') ? ' field-changed' : ''}`}><span>Текст вопроса</span>
-            <input value={formValues.title} onBlur={() => setTouched((p) => ({ ...p, title: true }))} onChange={(e) => onFieldChange('title', e.target.value)} />
-            {touched.title && formErrors.title ? <small className="field-error">{formErrors.title}</small> : null}
-          </label>
+          <div className="admin-collection-edit__row admin-collection-edit__row--identity">
+            <label className="form-field form-field--readonly admin-collection-edit__meta-field admin-collection-edit__field-id">
+              <span className="admin-collection-edit__meta-label">ID</span>
+              <input value={String(formValues.id)} disabled />
+            </label>
+            <label className={`form-field admin-collection-edit__meta-field${isChanged('title') ? ' field-changed' : ''}`}><span className="admin-collection-edit__meta-label">Текст вопроса</span>
+              <input value={formValues.title} onBlur={() => setTouched((p) => ({ ...p, title: true }))} onChange={(e) => onFieldChange('title', e.target.value)} />
+              {touched.title && formErrors.title ? <small className="field-error">{formErrors.title}</small> : null}
+            </label>
+          </div>
           <label className={`form-field${isChanged('description') ? ' field-changed' : ''}`}><span>Фидбек</span>
             <textarea rows={4} value={formValues.description} onBlur={() => setTouched((p) => ({ ...p, description: true }))} onChange={(e) => onFieldChange('description', e.target.value)} />
           </label>
@@ -196,32 +202,36 @@ function AdminQuestionEdit() {
           <div className="admin-question-editor__map-wrap">
             <Map clickPoint={{ lat: Number(formValues.correct_latitude) || 0, lng: Number(formValues.correct_longitude) || 0 }} onClick={onCoordinateMapChange} />
           </div>
-          <label className={`form-field${isChanged('question_type') ? ' field-changed' : ''}`}><span>Тип вопроса</span>
-            <select value={formValues.question_type} onBlur={() => setTouched((p) => ({ ...p, question_type: true }))} onChange={(e) => onFieldChange('question_type', e.target.value)}>
-              <option value="point">point</option><option value="point_with_radius">point_with_radius</option>
-            </select>
-            {touched.question_type && formErrors.question_type ? <small className="field-error">{formErrors.question_type}</small> : null}
-          </label>
-          <label className={`form-field${isChanged('radius_meters') ? ' field-changed' : ''}`}><span>Радиус (метры)</span>
-            <input value={formValues.question_type === 'point' ? '0' : formValues.radius_meters} disabled={formValues.question_type === 'point'} onBlur={() => setTouched((p) => ({ ...p, radius_meters: true }))} onChange={(e) => onFieldChange('radius_meters', e.target.value)} />
-            {touched.radius_meters && formErrors.radius_meters ? <small className="field-error">{formErrors.radius_meters}</small> : null}
-          </label>
-          <label className={`form-field${isChanged('difficulty') ? ' field-changed' : ''}`}><span>Сложность (1-10)</span>
-            <input value={formValues.difficulty} onBlur={() => setTouched((p) => ({ ...p, difficulty: true }))} onChange={(e) => onFieldChange('difficulty', e.target.value)} />
-            {touched.difficulty && formErrors.difficulty ? <small className="field-error">{formErrors.difficulty}</small> : null}
-          </label>
-          <label className={`form-field${isChanged('status') ? ' field-changed' : ''}`}><span>Статус</span>
-            <select value={formValues.status} onBlur={() => setTouched((p) => ({ ...p, status: true }))} onChange={(e) => onFieldChange('status', e.target.value)}>
-              <option value="moderation">moderation</option><option value="active">active</option><option value="inactive">inactive</option>
-            </select>
-            {touched.status && formErrors.status ? <small className="field-error">{formErrors.status}</small> : null}
-          </label>
-          <label className="form-field form-field--readonly"><span>Author ID</span><input value={String(formValues.author_id ?? '')} disabled /></label>
-          <label className="form-field form-field--readonly"><span>Создан</span><input value={formatDate(formValues.created_at)} disabled /></label>
-          <label className="form-field form-field--readonly"><span>Обновлен</span><input value={formatDate(formValues.updated_at)} disabled /></label>
+          <h2 className="admin-collection-edit__section-title">Параметры</h2>
+          <div className="admin-question-edit__row admin-question-edit__row--params">
+            <label className={`form-field${isChanged('question_type') ? ' field-changed' : ''}`}><span>Тип вопроса</span>
+              <select value={formValues.question_type} onBlur={() => setTouched((p) => ({ ...p, question_type: true }))} onChange={(e) => onFieldChange('question_type', e.target.value)}>
+                <option value="point">point</option><option value="point_with_radius">point_with_radius</option>
+              </select>
+              {touched.question_type && formErrors.question_type ? <small className="field-error">{formErrors.question_type}</small> : null}
+            </label>
+            <label className={`form-field${isChanged('radius_meters') ? ' field-changed' : ''}`}><span>Радиус (метры)</span>
+              <input value={formValues.question_type === 'point' ? '0' : formValues.radius_meters} disabled={formValues.question_type === 'point'} onBlur={() => setTouched((p) => ({ ...p, radius_meters: true }))} onChange={(e) => onFieldChange('radius_meters', e.target.value)} />
+              {touched.radius_meters && formErrors.radius_meters ? <small className="field-error">{formErrors.radius_meters}</small> : null}
+            </label>
+            <label className={`form-field${isChanged('difficulty') ? ' field-changed' : ''}`}><span>Сложность (1-10)</span>
+              <input value={formValues.difficulty} onBlur={() => setTouched((p) => ({ ...p, difficulty: true }))} onChange={(e) => onFieldChange('difficulty', e.target.value)} />
+              {touched.difficulty && formErrors.difficulty ? <small className="field-error">{formErrors.difficulty}</small> : null}
+            </label>
+            <label className={`form-field${isChanged('status') ? ' field-changed' : ''}`}><span>Статус</span>
+              <select value={formValues.status} onBlur={() => setTouched((p) => ({ ...p, status: true }))} onChange={(e) => onFieldChange('status', e.target.value)}>
+                <option value="moderation">moderation</option><option value="active">active</option><option value="inactive">inactive</option>
+              </select>
+              {touched.status && formErrors.status ? <small className="field-error">{formErrors.status}</small> : null}
+            </label>
+          </div>
+          <div className="admin-collection-edit__row admin-collection-edit__row--meta">
+            <label className="form-field form-field--readonly admin-collection-edit__meta-field"><span className="admin-collection-edit__meta-label">Автор</span><input value={String(formValues.author_id ?? '')} disabled /></label>
+            <label className="form-field form-field--readonly admin-collection-edit__meta-field"><span className="admin-collection-edit__meta-label">Создан</span><input value={formatDate(formValues.created_at)} disabled /></label>
+            <label className="form-field form-field--readonly admin-collection-edit__meta-field"><span className="admin-collection-edit__meta-label">Обновлен</span><input value={formatDate(formValues.updated_at)} disabled /></label>
+          </div>
           <div className="admin-question-editor__actions">
-            <button type="button" className="btn btn-secondary" onClick={() => navigate('/admin/questions')}>Назад</button>
-            <button type="submit" className="btn btn-primary" disabled={submitting}>{submitting ? 'Сохранение…' : 'Сохранить'}</button>
+            <button type="submit" className="btn btn-primary admin-collection-edit__save-btn" disabled={submitting}>{submitting ? 'Сохранение…' : 'Сохранить'}</button>
           </div>
         </form>
       ) : null}

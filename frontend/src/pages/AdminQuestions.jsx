@@ -66,7 +66,7 @@ function AdminQuestions() {
     return (
       <section className="admin-questions-page">
         <h1 className="admin-questions-page__title">Вопросы</h1>
-        <p className="form-error">Доступ только для администратора.</p>
+        <p className="form-error notice notice--error">Доступ только для администратора.</p>
       </section>
     );
   }
@@ -75,40 +75,42 @@ function AdminQuestions() {
     <section className="admin-questions-page">
       <div className="admin-questions-page__header">
         <h1 className="admin-questions-page__title">Вопросы</h1>
+      </div>
+      <div className="admin-questions-page__toolbar">
+        <div className="admin-questions-page__filters">
+          <label className="form-field">
+            <span>Фильтр по статусу</span>
+            <select
+              value={statusFilter}
+              onChange={(event) => {
+                const nextStatus = event.target.value;
+                setStatusFilter(nextStatus);
+                setPage(1);
+              }}
+            >
+              <option value="">Все</option>
+              <option value="active">active</option>
+              <option value="moderation">moderation</option>
+              <option value="inactive">inactive</option>
+            </select>
+          </label>
+        </div>
         <button
           type="button"
-          className="btn btn-primary"
+          className="btn admin-questions-page__add-btn"
           onClick={() => navigate('/admin/questions/new')}
         >
           Добавить вопрос
         </button>
       </div>
-      <div className="admin-questions-page__filters">
-        <label className="form-field">
-          <span>Фильтр по статусу</span>
-          <select
-            value={statusFilter}
-            onChange={(event) => {
-              const nextStatus = event.target.value;
-              setStatusFilter(nextStatus);
-              setPage(1);
-            }}
-          >
-            <option value="">Все</option>
-            <option value="active">active</option>
-            <option value="moderation">moderation</option>
-            <option value="inactive">inactive</option>
-          </select>
-        </label>
-      </div>
 
-      {loading ? <p>Загрузка…</p> : null}
-      {error ? <p className="form-error">{error}</p> : null}
+      {loading ? <p className="notice notice--info">Загрузка…</p> : null}
+      {error ? <p className="form-error notice notice--error">{error}</p> : null}
 
       {!loading && !error ? (
         <>
           {questions.length === 0 ? (
-            <p>Вопросов пока нет.</p>
+            <p className="notice notice--warning">Вопросов пока нет.</p>
           ) : (
             <div className="admin-questions-list">
               {questions.map((question) => (
@@ -138,9 +140,7 @@ function AdminQuestions() {
                   </div>
 
                   <div className="admin-question-card__meta">
-                    <p className="admin-question-card__meta-label">Автор</p>
                     <p className="admin-question-card__author">{getAuthorName(question)}</p>
-                    <p className="admin-question-card__meta-label">Статус</p>
                     <p className={`admin-question-card__status admin-question-card__status--${question.status}`}>
                       {STATUS_LABELS[question.status] || question.status}
                     </p>
@@ -154,16 +154,16 @@ function AdminQuestions() {
           <div className="admin-questions-page__pager">
             <button
               type="button"
-              className="btn btn-secondary"
+              className="btn admin-questions-page__pager-btn"
               onClick={() => setPage((prev) => prev - 1)}
               disabled={page === 1 || loading}
             >
               Назад
             </button>
-            <span>Страница {page}</span>
+            <span className="admin-questions-page__pager-current">Страница {page}</span>
             <button
               type="button"
-              className="btn btn-primary"
+              className="btn admin-questions-page__pager-btn"
               onClick={() => setPage((prev) => prev + 1)}
               disabled={loading || questions.length < PER_PAGE}
             >

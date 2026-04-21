@@ -27,6 +27,15 @@ function normalizeCollection(collection) {
   };
 }
 
+function formatQuestionStatus(status) {
+  const statusMap = {
+    active: 'Активный',
+    moderation: 'На модерации',
+    inactive: 'Неактивный',
+  };
+  return statusMap[status] || status || 'Не указан';
+}
+
 function validateCollection(values) {
   const errors = {};
   if (!values.name?.trim()) {
@@ -196,7 +205,7 @@ function AdminCollectionEdit() {
   if (!user || user.role !== 'admin') {
     return (
       <section className="admin-questions-page">
-        <p className="form-error">Доступ только для администратора.</p>
+        <p className="form-error notice notice--error">Доступ только для администратора.</p>
       </section>
     );
   }
@@ -205,38 +214,45 @@ function AdminCollectionEdit() {
     <section className="admin-questions-page">
       <div className="admin-question-editor__header">
         <h1 className="admin-questions-page__title">Редактирование коллекции</h1>
-        <Link className="btn btn-secondary" to="/admin/collections">
+        <Link className="btn btn-secondary admin-collection-edit__back-btn" to="/admin/collections">
           К списку коллекций
         </Link>
       </div>
 
-      {loading ? <p>Загрузка данных коллекции…</p> : null}
-      {error ? <p className="form-error">{error}</p> : null}
-      {saveSuccess ? <p className="admin-question-editor__success">{saveSuccess}</p> : null}
+      {loading ? <p className="notice notice--info">Загрузка данных коллекции…</p> : null}
+      {error ? <p className="form-error notice notice--error">{error}</p> : null}
+      {saveSuccess ? <p className="admin-question-editor__success notice notice--success">{saveSuccess}</p> : null}
 
       {collection && !loading ? (
         <form className="admin-question-editor__form" onSubmit={handleSave}>
-          <label className="form-field form-field--readonly">
-            <span>ID</span>
-            <input value={String(collection.id)} disabled />
-          </label>
+          <h2 className="admin-collection-edit__section-title">Основные данные</h2>
+          <div className="admin-collection-edit__row admin-collection-edit__row--identity">
+            <label className="form-field form-field--readonly admin-collection-edit__meta-field admin-collection-edit__field-id">
+              <span className="admin-collection-edit__meta-label">ID</span>
+              <input value={String(collection.id)} disabled />
+            </label>
 
-          <label className={`form-field${isChanged('name') ? ' field-changed' : ''}`}>
-            <span>Название</span>
-            <input
-              value={collection.name}
-              onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
-              onChange={(event) =>
-                setCollection((prev) => {
-                  setSaveSuccess('');
-                  return { ...prev, name: event.target.value };
-                })
-              }
-            />
-            {touched.name && formErrors.name ? (
-              <small className="field-error">{formErrors.name}</small>
-            ) : null}
-          </label>
+            <label
+              className={`form-field admin-collection-edit__meta-field${
+                isChanged('name') ? ' field-changed' : ''
+              }`}
+            >
+              <span className="admin-collection-edit__meta-label">Название</span>
+              <input
+                value={collection.name}
+                onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
+                onChange={(event) =>
+                  setCollection((prev) => {
+                    setSaveSuccess('');
+                    return { ...prev, name: event.target.value };
+                  })
+                }
+              />
+              {touched.name && formErrors.name ? (
+                <small className="field-error">{formErrors.name}</small>
+              ) : null}
+            </label>
+          </div>
 
           <label className={`form-field${isChanged('description') ? ' field-changed' : ''}`}>
             <span>Описание</span>
@@ -252,125 +268,133 @@ function AdminCollectionEdit() {
             />
           </label>
 
-          <label className={`form-field${isChanged('random_order') ? ' field-changed' : ''}`}>
-            <span>Случайный порядок вопросов</span>
-            <label className="admin-collection-edit__checkbox">
-              <input
-                type="checkbox"
-                checked={collection.random_order}
-                onChange={(event) =>
-                  setCollection((prev) => {
-                    setSaveSuccess('');
-                    return { ...prev, random_order: event.target.checked };
-                  })
-                }
-              />
-              <span>{collection.random_order ? 'Да' : 'Нет'}</span>
-            </label>
-          </label>
-
-          <label className="form-field form-field--readonly">
-            <span>Author ID</span>
-            <input value={String(collection.author_id ?? '')} disabled />
-          </label>
-
-          <label className="form-field form-field--readonly">
-            <span>Создана</span>
-            <input value={formatDate(collection.created_at)} disabled />
-          </label>
-
-          <div className="admin-collection-edit__questions">
-            <h2 className="admin-collection-edit__title">Вопросы в коллекции</h2>
-            <p className="admin-collection-edit__hint">Перетаскивайте карточки, чтобы менять порядок.</p>
-            <div className="admin-collection-edit__search">
-              <label className="form-field">
-                <span>Добавить вопрос по названию</span>
+          <div className="admin-collection-edit__row admin-collection-edit__row--meta">
+            <div
+              className={`form-field admin-collection-edit__meta-field${
+                isChanged('random_order') ? ' field-changed' : ''
+              }`}
+            >
+              <span className="admin-collection-edit__meta-label">Случайный порядок</span>
+              <label className="admin-collection-edit__checkbox">
                 <input
-                  value={questionSearch}
-                  onChange={(event) => {
-                    setQuestionSearch(event.target.value);
-                  }}
-                  placeholder="Введите минимум 3 символа..."
+                  type="checkbox"
+                  checked={collection.random_order}
+                  onChange={(event) =>
+                    setCollection((prev) => {
+                      setSaveSuccess('');
+                      return { ...prev, random_order: event.target.checked };
+                    })
+                  }
                 />
+                <span>{collection.random_order ? 'Да' : 'Нет'}</span>
               </label>
-              {suggestionsLoading ? <p className="admin-collection-edit__search-note">Поиск...</p> : null}
-              {suggestionsError ? (
-                <p className="form-error admin-collection-edit__search-note">{suggestionsError}</p>
-              ) : null}
-              {!suggestionsLoading &&
-              !suggestionsError &&
-              searchAttempted &&
-              questionSearch.trim().length >= 3 &&
-              suggestions.length === 0 ? (
-                <p className="admin-collection-edit__search-note">Нет вопросов с таким текстом</p>
-              ) : null}
-              {suggestions.length > 0 ? (
-                <div className="admin-collection-edit__suggest-list">
-                  {suggestions.map((question) => (
-                    <button
-                      key={question.id}
-                      type="button"
-                      className="admin-collection-edit__suggest-item"
-                      disabled={collection.Questions.some((item) => item.id === question.id)}
-                      onClick={() => appendQuestionFromSuggest(question)}
-                    >
-                      <span className="admin-collection-edit__suggest-title">{question.title}</span>
-                      <span className="admin-collection-edit__suggest-meta">ID {question.id}</span>
-                    </button>
-                  ))}
-                </div>
-              ) : null}
             </div>
-            {orderedQuestions.length === 0 ? (
-              <p>В коллекции нет вопросов.</p>
-            ) : (
-              <div className="admin-collection-edit__list">
-                {orderedQuestions.map((question) => (
-                  <article
-                    key={question.id}
-                    className={`admin-collection-edit__item${
-                      draggedQuestionId === question.id ? ' admin-collection-edit__item--dragging' : ''
-                    }`}
-                    draggable
-                    onDragStart={() => setDraggedQuestionId(question.id)}
-                    onDragEnd={() => setDraggedQuestionId(null)}
-                    onDragOver={(event) => event.preventDefault()}
-                    onDrop={() => {
-                      if (draggedQuestionId == null) return;
-                      moveQuestion(draggedQuestionId, question.id);
-                    }}
-                  >
-                    <div className="admin-collection-edit__pos">{question.uiPosition}</div>
-                    <div className="admin-collection-edit__item-main">
-                      <p className="admin-question-card__title">{question.title}</p>
-                      <p className="admin-question-card__feedback">
-                        {question.description || 'Без описания'}
-                      </p>
-                    </div>
-                    <div className="admin-collection-edit__item-meta">
-                      <p>ID {question.id}</p>
-                      <p>difficulty: {question.difficulty}</p>
-                      <p>{question.status}</p>
-                      <button
-                        type="button"
-                        className="btn btn-secondary admin-collection-edit__remove-btn"
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          removeQuestionFromCollection(question.id);
-                        }}
-                      >
-                        Удалить
-                      </button>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
+
+            <label className="form-field form-field--readonly admin-collection-edit__meta-field">
+              <span className="admin-collection-edit__meta-label">Автор</span>
+              <input value={String(collection.author_id ?? '')} disabled />
+            </label>
+
+            <label className="form-field form-field--readonly admin-collection-edit__meta-field">
+              <span className="admin-collection-edit__meta-label">Создана</span>
+              <input value={formatDate(collection.created_at)} disabled />
+            </label>
           </div>
 
+          <h2 className="admin-collection-edit__title">Вопросы в коллекции</h2>
+          <p className="admin-collection-edit__hint">Перетаскивайте карточки, чтобы менять порядок.</p>
+          <div className="admin-collection-edit__search">
+            <label className="form-field">
+              <span>Добавить вопрос по названию</span>
+              <input
+                value={questionSearch}
+                onChange={(event) => {
+                  setQuestionSearch(event.target.value);
+                }}
+                placeholder="Введите минимум 3 символа..."
+              />
+            </label>
+            {suggestionsLoading ? <p className="admin-collection-edit__search-note">Поиск...</p> : null}
+            {suggestionsError ? (
+              <p className="form-error notice notice--error admin-collection-edit__search-note">{suggestionsError}</p>
+            ) : null}
+            {!suggestionsLoading &&
+            !suggestionsError &&
+            searchAttempted &&
+            questionSearch.trim().length >= 3 &&
+            suggestions.length === 0 ? (
+              <p className="admin-collection-edit__search-note notice notice--warning">Нет вопросов с таким текстом</p>
+            ) : null}
+            {suggestions.length > 0 ? (
+              <div className="admin-collection-edit__suggest-list">
+                {suggestions.map((question) => (
+                  <button
+                    key={question.id}
+                    type="button"
+                    className="admin-collection-edit__suggest-item"
+                    disabled={collection.Questions.some((item) => item.id === question.id)}
+                    onClick={() => appendQuestionFromSuggest(question)}
+                  >
+                    <span className="admin-collection-edit__suggest-title">{question.title}</span>
+                    <span className="admin-collection-edit__suggest-meta">ID {question.id}</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+          {orderedQuestions.length === 0 ? (
+            <p className="notice notice--warning">В коллекции нет вопросов.</p>
+          ) : (
+            <div className="admin-collection-edit__list">
+              {orderedQuestions.map((question) => (
+                <article
+                  key={question.id}
+                  className={`admin-collection-edit__item${
+                    draggedQuestionId === question.id ? ' admin-collection-edit__item--dragging' : ''
+                  }`}
+                  draggable
+                  onDragStart={() => setDraggedQuestionId(question.id)}
+                  onDragEnd={() => setDraggedQuestionId(null)}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={() => {
+                    if (draggedQuestionId == null) return;
+                    moveQuestion(draggedQuestionId, question.id);
+                  }}
+                >
+                  <div className="admin-collection-edit__pos">{question.uiPosition}</div>
+                  <div className="admin-collection-edit__item-main">
+                    <p className="admin-question-card__title">{question.title}</p>
+                    <p className="admin-question-card__feedback">
+                      {question.description || 'Без описания'}
+                    </p>
+                  </div>
+                  <div className="admin-collection-edit__item-meta">
+                    <p>ID {question.id}</p>
+                    <p>Сложность: {question.difficulty}</p>
+                    <p>{formatQuestionStatus(question.status)}</p>
+                    <button
+                      type="button"
+                      className="btn btn-secondary admin-collection-edit__remove-btn"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        removeQuestionFromCollection(question.id);
+                      }}
+                    >
+                      Удалить
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+
           <div className="admin-question-editor__actions">
-            <button type="submit" className="btn btn-primary" disabled={submitting}>
+            <button
+              type="submit"
+              className="btn btn-primary admin-collection-edit__save-btn"
+              disabled={submitting}
+            >
               {submitting ? 'Сохранение…' : 'Сохранить'}
             </button>
           </div>
