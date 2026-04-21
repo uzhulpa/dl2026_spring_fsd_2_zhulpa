@@ -26,9 +26,14 @@ function Header() {
               Коллекции
             </Link>
             {user.role === 'admin' ? (
-              <Link className="site-nav-link" to="/admin/questions">
-                Админ: Вопросы
-              </Link>
+              <>
+                <Link className="site-nav-link" to="/admin/questions">
+                  Админ: Вопросы
+                </Link>
+                <Link className="site-nav-link" to="/admin/collections">
+                  Админ: Коллекции
+                </Link>
+              </>
             ) : null}
             <span className="site-username">{user.username}</span>
             <button type="button" className="site-logout" onClick={handleLogout}>
