@@ -67,6 +67,63 @@ class AdminCollectionsService {
 
         return result;
     }
+
+    async putCollectionById(collectionId, newData) {
+        const transaction = await sequelize.transaction();
+
+        try {
+            const collection = await Collection.findByPk(collectionId, { transaction });
+
+            if (!collection) {
+                await transaction.rollback();
+                return null;
+            }
+
+            const collectionUpdateData = {};
+        
+            if (newData.name !== undefined) {
+                collectionUpdateData.name = newData.name;
+            }
+            if (newData.description !== undefined) {
+                collectionUpdateData.description = newData.description;
+            }
+            if (newData.random_order !== undefined) {
+                collectionUpdateData.random_order = newData.random_order;
+            }
+
+            // Обновляем коллекцию
+            await collection.update(collectionUpdateData, { transaction });
+
+            if (newData.questions !== undefined && Array.isArray(newData.questions)) {
+                // Удаляем все существующие связи вопросов с этой коллекцией
+                await CollectionQuestion.destroy({
+                    where: { collection_id: collectionId },
+                    transaction
+                });
+
+                // Создаем новые связи
+                const collectionQuestions = newData.questions.map(q => ({
+                    collection_id: collectionId,
+                    question_id: q.question_id,
+                    position: q.position
+                }));
+
+                await CollectionQuestion.bulkCreate(collectionQuestions, { transaction });
+            }
+
+            console.log(`Collection ${collectionId} updated by admin with data:`, newData);
+
+            await transaction.commit();
+
+            const newCollection = await this.getCollectionById(collectionId);
+
+            return newCollection;
+        }
+        catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
+    }
 }
 
 export default new AdminCollectionsService();

@@ -46,6 +46,28 @@ class AdminCollectionsController {
             });
         }
     }
+
+    async updateCollectionById(req, res) {
+        try {
+            const collectionId = req.params.collectionId;
+            const newData = req.body;
+
+            const result = await AdminCollectionsService.putCollectionById(collectionId, newData);
+
+            res.status(200).json({
+                success: true,
+                data: result
+            });
+        }
+        catch (error) {
+            console.error(`Admin (collections) error: ${error}`);
+
+            return res.status(500).json({
+                success: false,
+                message: 'Ошибка при обновлении данных коллекции'
+            });
+        }
+    }
 }
 
 export default new AdminCollectionsController();
