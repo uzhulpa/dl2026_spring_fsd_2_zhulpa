@@ -2,10 +2,12 @@ import LeaderboardService from "../services/LeaderboardService.js";
 
 class LeaderboardController {
     async getInfiniteLeaders(req, res) {
-
         try {
-            const limit = req.query.limit;
-            const offset = req.query.offset;
+            const page = (typeof req.query.page == 'undefined' ? 1 : req.query.page);
+            const perPage = (typeof req.query.perPage == 'undefined' ? 10 : req.query.perPage);
+
+            const limit = perPage;
+            const offset = (page-1) * perPage;
 
             const result = await LeaderboardService.getInfiniteLeaders(limit, offset);
 
@@ -28,8 +30,11 @@ class LeaderboardController {
 
         try {
             const collectionId = req.params.collectionId;
-            const limit = req.query.limit;
-            const offset = req.query.offset;
+            const page = (typeof req.query.page == 'undefined' ? 1 : req.query.page);
+            const perPage = (typeof req.query.perPage == 'undefined' ? 10 : req.query.perPage);
+
+            const limit = perPage;
+            const offset = (page-1) * perPage;
 
             const result = await LeaderboardService.getCollectionLeaders(collectionId, limit, offset);
 
