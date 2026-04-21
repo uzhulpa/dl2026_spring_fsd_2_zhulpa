@@ -3,7 +3,10 @@ import bcrypt from "bcryptjs";
 import { generateAccessToken } from "../utils/jwtTokensUtil.js";
 import { AppError } from "../utils/appError.js";
 
-const BCRYPT_ROUNDS = process.env.BCRYPT_ROUNDS;
+const BCRYPT_ROUNDS = Number.parseInt(process.env.BCRYPT_ROUNDS ?? "10", 10);
+const SAFE_BCRYPT_ROUNDS = Number.isInteger(BCRYPT_ROUNDS) && BCRYPT_ROUNDS >= 4 && BCRYPT_ROUNDS <= 31
+    ? BCRYPT_ROUNDS
+    : 10;
 
 class AuthService {
     async registerUser(username, email, password) {
@@ -21,7 +24,7 @@ class AuthService {
             throw new AppError('EMAIL_ALREADY_EXISTS');
         }
 
-        const password_hash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+        const password_hash = await bcrypt.hash(password, SAFE_BCRYPT_ROUNDS);
 
         const user = await User.create({username, email, password_hash});
         
