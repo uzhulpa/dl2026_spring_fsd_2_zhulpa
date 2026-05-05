@@ -68,6 +68,27 @@ class AdminCollectionsController {
             });
         }
     }
+
+    async createCollection(req, res) {
+        try {
+            const newData = req.body;
+
+            const result = await AdminCollectionsService.addCollection(newData, req.user.id);
+
+            res.status(200).json({
+                success: true,
+                data: result
+            });
+        }
+        catch (error) {
+            console.error(`Admin (collections) error: ${error}`);
+
+            return res.status(500).json({
+                success: false,
+                message: 'Ошибка при создании коллекции'
+            });
+        }
+    }
 }
 
 export default new AdminCollectionsController();

@@ -91,17 +91,14 @@ class AdminCollectionsService {
                 collectionUpdateData.random_order = newData.random_order;
             }
 
-            // Обновляем коллекцию
             await collection.update(collectionUpdateData, { transaction });
 
             if (newData.questions !== undefined && Array.isArray(newData.questions)) {
-                // Удаляем все существующие связи вопросов с этой коллекцией
                 await CollectionQuestion.destroy({
                     where: { collection_id: collectionId },
                     transaction
                 });
 
-                // Создаем новые связи
                 const collectionQuestions = newData.questions.map(q => ({
                     collection_id: collectionId,
                     question_id: q.question_id,
@@ -116,6 +113,43 @@ class AdminCollectionsService {
             await transaction.commit();
 
             const newCollection = await this.getCollectionById(collectionId);
+
+            return newCollection;
+        }
+        catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
+    }
+
+    async addCollection(newData, authorId) {
+        const transaction = await sequelize.transaction();
+
+        try {
+            const collection = await Collection.create({
+                name: newData.name,
+                description: newData.description,
+                random_order: newData.random_order,
+                author_id: authorId
+            });
+
+            console.log(collection);
+
+            if (newData.questions !== undefined && Array.isArray(newData.questions)) {
+                const collectionQuestions = newData.questions.map(q => ({
+                    collection_id: collection.id,
+                    question_id: q.question_id,
+                    position: q.position
+                }));
+
+                await CollectionQuestion.bulkCreate(collectionQuestions, { transaction });
+            }
+
+            console.log(`Collection ${collection.id} created by admin with data:`, newData);
+
+            await transaction.commit();
+
+            const newCollection = await this.getCollectionById(collection.id);
 
             return newCollection;
         }
