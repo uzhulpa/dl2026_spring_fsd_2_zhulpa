@@ -56,6 +56,14 @@ export const updateAdminCollectionById = async (collectionId, payload) => {
   return data.data;
 };
 
+export const createAdminCollection = async (payload) => {
+  const { data } = await apiClient.post('/admin/collections', payload);
+  if (!data?.success || !data.data) {
+    throw new Error('Некорректный ответ сервера');
+  }
+  return data.data;
+}
+
 export const suggestAdminQuestionsByTitle = async (title) => {
   const { data } = await apiClient.get('/admin/questions/suggest', {
     params: { title },

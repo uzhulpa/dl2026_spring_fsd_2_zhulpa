@@ -11,6 +11,7 @@ import AdminQuestionEdit from './pages/AdminQuestionEdit';
 import AdminQuestionCreate from './pages/AdminQuestionCreate';
 import AdminCollections from './pages/AdminCollections';
 import AdminCollectionEdit from './pages/AdminCollectionEdit';
+import AdminCollectionCreate from './pages/AdminCollectionCreate';
 
 function AppRoutes() {
   return (
@@ -27,6 +28,7 @@ function AppRoutes() {
         <Route path="/admin/questions/:questionId" element={<AdminQuestionEdit />} />
         <Route path="/admin/collections" element={<AdminCollections />} />
         <Route path="/admin/collections/:collectionId" element={<AdminCollectionEdit />} />
+        <Route path="/admin/collections/new" element={<AdminCollectionCreate />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

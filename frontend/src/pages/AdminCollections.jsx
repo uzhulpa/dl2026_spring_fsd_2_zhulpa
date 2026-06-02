@@ -54,6 +54,13 @@ function AdminCollections() {
   return (
     <section className="admin-questions-page">
       <h1 className="admin-questions-page__title">Коллекции</h1>
+      <button
+          type="button"
+          className="btn admin-questions-page__add-btn"
+          onClick={() => navigate('/admin/collections/new')}
+        >
+          Добавить коллекцию
+        </button>
 
       {loading ? <p className="notice notice--info">Загрузка…</p> : null}
       {error ? <p className="form-error notice notice--error">{error}</p> : null}
